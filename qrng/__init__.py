@@ -29,7 +29,7 @@ _set_qubits(8) # Default Circuit is 8 Qubits
 def set_backend(b = 'qasm_simulator'):
     global _backend
     global provider
-    if b == 'ibmq_london' or b == 'ibmq_burlington' or b == 'ibmq_essex'\
+    if b == 'ibmq_belem' or b == 'ibmq_burlington' or b == 'ibmq_essex'\
      or b == 'ibmq_ourense' or b == 'ibmq_vigo' or b == 'ibmqx2' :
         _backend = provider.get_backend(b)
         _set_qubits(5)
@@ -42,6 +42,9 @@ def set_backend(b = 'qasm_simulator'):
     elif b == 'ibmq_qasm_simulator':
         _backend = provider.get_backend(b)
         _set_qubits(32)
+    elif b == 'ibmq_auckland':
+        _backend = provider.get_backend(b)
+        _set_qubits(27)
     else:
         _backend = qiskit.BasicAer.get_backend('qasm_simulator')
         _set_qubits(8)
@@ -56,8 +59,21 @@ def _request_bits(n):
     iterations = math.ceil(n/_circuit.width()*2)
     for _ in range(iterations):
         # Create new job and run the quantum circuit
-        job = qiskit.execute(_circuit, _backend, shots=1)
-        _bitCache += _bit_from_counts(job.result().get_counts())
+        jobs = []
+        for _ in range(5):
+            job = qiskit.execute(_circuit, _backend, shots=20000, memory=True)
+            jobs.append(job)
+            print('Job: ')
+
+        mems = []
+        for i in range(5):
+            print('Memory: ')
+            mem = jobs[i].result().get_memory()
+            string = "".join(mem)
+            mems.append(string)
+
+        final_string = "".join(mems)
+        _bitCache += _bit_from_counts(res)
 
 # Returns a random n-bit string by popping n bits from bitCache.
 def get_bit_string(n):
